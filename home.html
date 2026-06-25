@@ -611,7 +611,7 @@ const SB_HEADERS = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABA
   wrap.addEventListener('mousedown',  () => clearInterval(timer));
   wrap.addEventListener('touchstart', () => clearInterval(timer), { passive: true });
   ['mouseup','mouseleave','touchend'].forEach(ev =>
-    wrap.addEventListener(ev, () => { timer = setInterval(() => goTo(current + 1), 4000); })
+    wrap.addEventListener(ev, () => { clearInterval(timer); timer = setInterval(() => goTo(current + 1), 4000); })
   );
 
   // Supabase에서 배너 로드
@@ -627,7 +627,7 @@ const SB_HEADERS = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABA
         el.innerHTML =
           '<img src="' + s.img_url + '" alt="" draggable="false">' +
           '<div class="card-gradient-text">' +
-            '<div class="card-title">' + s.title.replace(/\n/g, '<br>') + '</div>' +
+            '<div class="card-title">' + s.title.replace(/\\n/g, '<br>') + '</div>' +
             '<div class="card-subtitle">' + s.subtitle + '</div>' +
           '</div>';
         if (s.link_url) {
