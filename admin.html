@@ -27,6 +27,8 @@
     .btn-preview { background: #f0f0f0; color: #1a1a1a; }
     .btn-delete { background: none; border: 1px solid #ddd; color: #999; padding: 6px 12px; font-size: 12px; }
     .btn-delete:hover { border-color: #ff4444; color: #ff4444; }
+    .btn-edit { background: none; border: 1px solid #ddd; color: #555; padding: 6px 12px; font-size: 12px; margin-right: 6px; }
+    .btn-edit:hover { border-color: #1a1a1a; color: #1a1a1a; }
     .list-box { background: #fff; border-radius: 12px; padding: 24px; }
     .list-box h2 { font-size: 16px; margin-bottom: 16px; color: #555; }
     .item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
@@ -77,7 +79,7 @@
       <div class="preview-domain" id="previewDomain"></div>
     </div>
 
-    <button class="btn-primary" onclick="addItem()">추가하기</button>
+    <button class="btn-primary" id="addItemBtn" onclick="addItem()">추가하기</button>
   </div>
 
   <!-- 에피소드 제목 -->
@@ -101,7 +103,7 @@
       <div class="preview-title" id="bannerPreviewTitle"></div>
       <div class="preview-domain" id="bannerPreviewDomain"></div>
     </div>
-    <button class="btn-primary" style="margin-top:12px;" onclick="addBanner()">배너 추가</button>
+    <button class="btn-primary" id="addBannerBtn" style="margin-top:12px;" onclick="addBanner()">배너 추가</button>
   </div>
 
   <div class="list-box" style="margin-bottom:32px;">
@@ -125,6 +127,8 @@ const OG_API = 'https://mori-silk.vercel.app/api/og';
 const ADMIN_PW = 'mori2025';
 
 let ogCache = null;
+let editingStoreId = null;
+let editingBannerId = null;
 
 function checkPw() {
   const pw = document.getElementById('pwInput').value;
@@ -166,33 +170,43 @@ async function addItem() {
   if (!url) return alert('URL을 입력해주세요.');
   if (!ogCache) await previewUrl();
 
-  const body = {
-    url,
-    ep,
-    title: ogCache?.title || '',
-    image: ogCache?.image || ''
-  };
+  const body = { url, ep, title: ogCache?.title || '', image: ogCache?.image || '' };
+  const isEdit = editingStoreId !== null;
+  const endpoint = isEdit
+    ? SUPABASE_URL + '/rest/v1/stores?id=eq.' + editingStoreId
+    : SUPABASE_URL + '/rest/v1/stores';
 
-  const res = await fetch(SUPABASE_URL + '/rest/v1/stores', {
-    method: 'POST',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
-    },
+  const res = await fetch(endpoint, {
+    method: isEdit ? 'PATCH' : 'POST',
+    headers: { ...SB_HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
     body: JSON.stringify(body)
   });
 
   if (res.ok) {
-    showToast('추가됐어요!');
+    showToast(isEdit ? '수정됐어요!' : '추가됐어요!');
     document.getElementById('urlInput').value = '';
     document.getElementById('previewBox').style.display = 'none';
+    document.getElementById('addItemBtn').textContent = '추가하기';
     ogCache = null;
+    editingStoreId = null;
     loadList();
   } else {
-    alert('추가 실패: ' + await res.text());
+    alert('실패: ' + await res.text());
   }
+}
+
+function editStore(id, url, ep, title, image) {
+  editingStoreId = id;
+  document.getElementById('urlInput').value = url;
+  document.getElementById('epSelect').value = ep;
+  ogCache = { title, image, url };
+  const box = document.getElementById('previewBox');
+  box.style.display = 'block';
+  document.getElementById('previewImg').src = image || '';
+  document.getElementById('previewTitle').textContent = title || '';
+  document.getElementById('previewDomain').textContent = new URL(url).hostname.replace('www.', '');
+  document.getElementById('addItemBtn').textContent = '수정하기';
+  document.getElementById('urlInput').scrollIntoView({ behavior: 'smooth' });
 }
 
 let bannerOgCache = null;
@@ -256,8 +270,9 @@ async function loadBanners() {
       <img src="${b.img_url}" alt="" onerror="this.style.background='#eee'" style="width:56px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0;">
       <div class="item-info">
         <div class="item-title">${b.title || '—'}</div>
-        <div class="item-meta">${b.subtitle || ''} · 순서 ${b.order_num}</div>
+        <div class="item-meta">${b.link_url ? new URL(b.link_url).hostname.replace('www.','') : ''} · 순서 ${b.order_num}</div>
       </div>
+      <button class="btn-edit" onclick="editBanner(${b.id}, '${(b.link_url||b.img_url||'').replace(/'/g,"\\'")}', '${b.img_url||''}', '${(b.title||'').replace(/'/g,"\\'")}')">수정</button>
       <button class="btn-delete" onclick="deleteBanner(${b.id})">삭제</button>
     </div>
   `).join('');
@@ -271,23 +286,42 @@ async function addBanner() {
   const img_url = bannerOgCache?.image || '';
   const title = bannerOgCache?.title || '';
   const link_url = bannerOgCache?.url || pageUrl;
+  if (!img_url) return alert('이미지를 가져오지 못했어요.');
 
-  if (!img_url) return alert('이미지를 가져오지 못했어요. URL을 확인해주세요.');
+  const isEdit = editingBannerId !== null;
+  const endpoint = isEdit
+    ? SUPABASE_URL + '/rest/v1/banners?id=eq.' + editingBannerId
+    : SUPABASE_URL + '/rest/v1/banners';
 
-  const res = await fetch(SUPABASE_URL + '/rest/v1/banners', {
-    method: 'POST',
+  const res = await fetch(endpoint, {
+    method: isEdit ? 'PATCH' : 'POST',
     headers: { ...SB_HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
     body: JSON.stringify({ img_url, title, subtitle: '', link_url, order_num: 0 })
   });
   if (res.ok) {
-    showToast('배너 추가됐어요!');
+    showToast(isEdit ? '수정됐어요!' : '배너 추가됐어요!');
     document.getElementById('bannerPageUrl').value = '';
     document.getElementById('bannerPreviewBox').style.display = 'none';
+    document.getElementById('addBannerBtn').textContent = '배너 추가';
     bannerOgCache = null;
+    editingBannerId = null;
     loadBanners();
   } else {
-    alert('추가 실패: ' + await res.text());
+    alert('실패: ' + await res.text());
   }
+}
+
+function editBanner(id, pageUrl, imgUrl, title) {
+  editingBannerId = id;
+  document.getElementById('bannerPageUrl').value = pageUrl;
+  bannerOgCache = { image: imgUrl, title, url: pageUrl };
+  const box = document.getElementById('bannerPreviewBox');
+  box.style.display = 'block';
+  document.getElementById('bannerPreviewImg').src = imgUrl;
+  document.getElementById('bannerPreviewTitle').textContent = title || '';
+  document.getElementById('bannerPreviewDomain').textContent = pageUrl ? new URL(pageUrl).hostname.replace('www.','') : '';
+  document.getElementById('addBannerBtn').textContent = '수정하기';
+  document.getElementById('bannerPageUrl').scrollIntoView({ behavior: 'smooth' });
 }
 
 async function deleteBanner(id) {
@@ -316,6 +350,7 @@ async function loadList() {
         <div class="item-title"><span class="ep-badge">ep.${item.ep}</span>${item.title || item.url}</div>
         <div class="item-meta">${new URL(item.url).hostname.replace('www.','')}</div>
       </div>
+      <button class="btn-edit" onclick="editStore(${item.id}, '${item.url}', ${item.ep}, '${(item.title||'').replace(/'/g,"\\'")}', '${item.image||''}')">수정</button>
       <button class="btn-delete" onclick="deleteItem(${item.id})">삭제</button>
     </div>
   `).join('');
