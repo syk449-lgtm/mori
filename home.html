@@ -414,6 +414,18 @@
     .footer-divider { height: 1px; background: #efefef; margin: 14px 0; }
     .footer-links { display: flex; align-items: center; gap: 8px; }
     .footer-link { font-size: 12px; line-height: 20px; color: #999; cursor: pointer; }
+
+    /* 스켈레톤 로딩 */
+    .store-card-skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .store-card { cursor: pointer; }
     .footer-dot { width: 2px; height: 2px; border-radius: 50%; background: #bbb; }
   </style>
 </head>
@@ -449,56 +461,7 @@
     <span class="ep-badge dark">ep. 1</span>
     <div class="section-title">향기로 기억되는 하루</div>
   </div>
-  <div class="image-grid">
-    <div class="image-row">
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img1.png" alt="미소바케카케">
-        </div>
-        <div class="store-card-name">미소바케카케</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img2.png" alt="타셰">
-        </div>
-        <div class="store-card-name">타셰</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-    </div>
-    <div class="image-row">
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img3.png" alt="타셰">
-        </div>
-        <div class="store-card-name">타셰</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img4.png" alt="미소바케카케">
-        </div>
-        <div class="store-card-name">미소바케카케</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="image-grid" id="ep1-grid"></div>
   <div class="more-btn-wrap">
     <button class="more-btn" onclick="location.href='content.html'">더보기</button>
   </div>
@@ -510,56 +473,7 @@
     <span class="ep-badge light">ep. 2</span>
     <div class="section-title">너를 닮은 케이크 한 조각</div>
   </div>
-  <div class="image-grid">
-    <div class="image-row">
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img1.png" alt="우이필드">
-        </div>
-        <div class="store-card-name">우이필드</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img2.png" alt="분바렌도">
-        </div>
-        <div class="store-card-name">분바렌도</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-    </div>
-    <div class="image-row">
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/banner_right.png" alt="분바렌도">
-        </div>
-        <div class="store-card-name">분바렌도</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img5.png" alt="우이필드">
-        </div>
-        <div class="store-card-name">우이필드</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="image-grid" id="ep2-grid"></div>
   <div class="more-btn-wrap">
     <button class="more-btn" onclick="location.href='content.html'">더보기</button>
   </div>
@@ -569,58 +483,9 @@
 <div class="scroll-section">
   <div class="section-header">
     <span class="ep-badge darker">ep. 3</span>
-    <div class="section-title">너를 닮은 케이크 한 조각</div>
+    <div class="section-title">달콤한 기억을 선물하세요</div>
   </div>
-  <div class="image-grid">
-    <div class="image-row">
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img1.png" alt="우이필드">
-        </div>
-        <div class="store-card-name">우이필드</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img2.png" alt="분바렌도">
-        </div>
-        <div class="store-card-name">분바렌도</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-    </div>
-    <div class="image-row">
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img3.png" alt="분바렌도">
-        </div>
-        <div class="store-card-name">분바렌도</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img4.png" alt="우이필드">
-        </div>
-        <div class="store-card-name">우이필드</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="image-grid" id="ep3-grid"></div>
   <div class="more-btn-wrap">
     <button class="more-btn" onclick="location.href='content.html'">더보기</button>
   </div>
@@ -630,58 +495,9 @@
 <div class="scroll-section">
   <div class="section-header">
     <span class="ep-badge light">ep. 4</span>
-    <div class="section-title">너를 닮은 케이크 한 조각</div>
+    <div class="section-title">네 손에 핀 작은 선물</div>
   </div>
-  <div class="image-grid">
-    <div class="image-row">
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img1.png" alt="우이필드">
-        </div>
-        <div class="store-card-name">우이필드</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img2.png" alt="분바렌도">
-        </div>
-        <div class="store-card-name">분바렌도</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-    </div>
-    <div class="image-row">
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/banner_right.png" alt="분바렌도">
-        </div>
-        <div class="store-card-name">분바렌도</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-      <div class="store-card">
-        <div class="store-card-img">
-          <img src="assets/img5.png" alt="우이필드">
-        </div>
-        <div class="store-card-name">우이필드</div>
-        <div class="store-card-meta">
-          <span class="store-card-location">서울 용산구</span>
-          <div class="store-card-dot"></div>
-          <span class="store-card-category">케이크/디저트</span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="image-grid" id="ep4-grid"></div>
   <div class="more-btn-wrap">
     <button class="more-btn" onclick="location.href='content.html'">더보기</button>
   </div>
@@ -844,6 +660,62 @@
   ['mouseup','mouseleave','touchend'].forEach(ev =>
     wrap.addEventListener(ev, () => { timer = setInterval(() => goTo(current + 1), 4000); })
   );
+})();
+</script>
+
+<script>
+(function() {
+  const API = 'https://mori-silk.vercel.app/api/og';
+
+  function makeCard(store) {
+    const card = document.createElement('div');
+    card.className = 'store-card';
+    card.innerHTML = `
+      <div class="store-card-img store-card-skeleton"></div>
+      <div class="store-card-name" style="color:#ccc">—</div>
+      <div class="store-card-meta">
+        <span class="store-card-location" style="color:#ddd">로딩중</span>
+      </div>`;
+    card.addEventListener('click', () => window.open(store.url, '_blank'));
+
+    fetch(API + '?url=' + encodeURIComponent(store.url))
+      .then(r => r.json())
+      .then(og => {
+        const imgDiv = card.querySelector('.store-card-img');
+        imgDiv.classList.remove('store-card-skeleton');
+        if (og.image) {
+          imgDiv.innerHTML = '<img src="' + og.image + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">';
+        }
+        card.querySelector('.store-card-name').textContent = og.title || '—';
+        card.querySelector('.store-card-name').style.color = '';
+        const host = new URL(store.url).hostname.replace('www.', '');
+        card.querySelector('.store-card-meta').innerHTML =
+          '<span class="store-card-location">' + host + '</span>';
+      })
+      .catch(() => {
+        card.querySelector('.store-card-name').textContent = '로드 실패';
+      });
+
+    return card;
+  }
+
+  fetch('stores.json')
+    .then(r => r.json())
+    .then(stores => {
+      [1, 2, 3, 4].forEach(ep => {
+        const grid = document.getElementById('ep' + ep + '-grid');
+        if (!grid) return;
+        const items = stores.filter(s => s.ep === ep);
+        for (let i = 0; i < items.length; i += 2) {
+          const row = document.createElement('div');
+          row.className = 'image-row';
+          row.appendChild(makeCard(items[i]));
+          if (items[i + 1]) row.appendChild(makeCard(items[i + 1]));
+          grid.appendChild(row);
+        }
+      });
+    })
+    .catch(e => console.error('stores.json 로드 실패:', e));
 })();
 </script>
 </body>
