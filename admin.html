@@ -99,6 +99,7 @@
       <input type="text" id="bannerImg" placeholder="이미지 URL (예: assets/banner_main.png)">
       <input type="text" id="bannerTitle" placeholder="배너 제목 (\n으로 줄바꿈)">
       <input type="text" id="bannerSubtitle" placeholder="서브타이틀">
+      <input type="text" id="bannerLink" placeholder="클릭 시 이동할 URL (없으면 비워두기)">
       <input type="number" id="bannerOrder" placeholder="순서 (0부터)" value="0" style="width:120px;">
     </div>
     <button class="btn-primary" style="margin-top:12px;" onclick="addBanner()">배너 추가</button>
@@ -240,16 +241,17 @@ async function addBanner() {
   const img_url = document.getElementById('bannerImg').value.trim();
   const title = document.getElementById('bannerTitle').value.trim();
   const subtitle = document.getElementById('bannerSubtitle').value.trim();
+  const link_url = document.getElementById('bannerLink').value.trim();
   const order_num = parseInt(document.getElementById('bannerOrder').value) || 0;
   if (!img_url) return alert('이미지 URL을 입력해주세요.');
   const res = await fetch(SUPABASE_URL + '/rest/v1/banners', {
     method: 'POST',
     headers: { ...SB_HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-    body: JSON.stringify({ img_url, title, subtitle, order_num })
+    body: JSON.stringify({ img_url, title, subtitle, link_url: link_url || null, order_num })
   });
   if (res.ok) {
     showToast('배너 추가됐어요!');
-    ['bannerImg','bannerTitle','bannerSubtitle'].forEach(id => document.getElementById(id).value = '');
+    ['bannerImg','bannerTitle','bannerSubtitle','bannerLink'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('bannerOrder').value = '0';
     loadBanners();
   } else {

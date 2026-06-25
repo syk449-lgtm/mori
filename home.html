@@ -630,6 +630,10 @@ const SB_HEADERS = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABA
             '<div class="card-title">' + s.title.replace(/\n/g, '<br>') + '</div>' +
             '<div class="card-subtitle">' + s.subtitle + '</div>' +
           '</div>';
+        if (s.link_url) {
+          el.style.cursor = 'pointer';
+          el.addEventListener('click', () => window.open(s.link_url, '_blank'));
+        }
         slider.appendChild(el);
         return el;
       });
