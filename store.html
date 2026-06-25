@@ -133,13 +133,13 @@
       height: 100%;
       object-fit: cover;
       filter: brightness(0) invert(1);
-      transition: filter 0.3s ease;
+      transition: filter 0.1s ease-in-out;
     }
     .nav-icon.back img {
       transform: rotate(180deg);
     }
     .top-nav {
-      transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      transition: background-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
     }
     .top-nav.scrolled {
       background-color: rgba(255,255,255,1);
@@ -147,7 +147,7 @@
     }
     .top-nav.scrolled .nav-icon img {
       filter: none;
-      transition: filter 0.2s ease-in-out;
+      transition: filter 0.1s ease-in-out;
     }
 
     /* ── 화이트 카드 (히어로 위 overlap) ── */
@@ -383,11 +383,11 @@
 <script>
 (function() {
   const nav = document.querySelector('.top-nav');
-  const card = document.querySelector('.content-card');
+  const trigger = document.querySelector('.store-name-en');
 
   window.addEventListener('scroll', () => {
-    const cardTop = card.getBoundingClientRect().top;
-    if (cardTop <= 56) {
+    const triggerTop = trigger.getBoundingClientRect().top;
+    if (triggerTop <= 56) {
       nav.classList.add('scrolled');
     } else {
       nav.classList.remove('scrolled');
