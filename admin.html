@@ -96,7 +96,8 @@
   <div class="form-box">
     <h2>배너 추가</h2>
     <div style="display:flex;flex-direction:column;gap:8px;">
-      <input type="text" id="bannerImg" placeholder="이미지 URL (예: assets/banner_main.png)">
+      <input type="text" id="bannerImg" placeholder="이미지 URL (예: assets/banner_main.png)" oninput="previewBannerImg(this.value)">
+      <img id="bannerImgPreview" src="" alt="" style="display:none;width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:4px;">
       <input type="text" id="bannerTitle" placeholder="배너 제목 (\n으로 줄바꿈)">
       <input type="text" id="bannerSubtitle" placeholder="서브타이틀">
       <input type="text" id="bannerLink" placeholder="클릭 시 이동할 URL (없으면 비워두기)">
@@ -194,6 +195,14 @@ async function addItem() {
   } else {
     alert('추가 실패: ' + await res.text());
   }
+}
+
+function previewBannerImg(url) {
+  const img = document.getElementById('bannerImgPreview');
+  if (!url) { img.style.display = 'none'; return; }
+  img.src = url;
+  img.style.display = 'block';
+  img.onerror = () => { img.style.display = 'none'; };
 }
 
 async function loadEpisodes() {
