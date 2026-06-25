@@ -3,6 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=393, initial-scale=1.0">
+  <script>
+    (function() {
+      var dw = 393;
+      var sw = Math.min(screen.width, screen.height);
+      if (sw > 0 && sw !== dw) {
+        document.querySelector('meta[name="viewport"]').content =
+          'width=' + dw + ', initial-scale=' + (sw / dw).toFixed(4);
+      }
+    })();
+  </script>
   <title>mori — 미소바케카케</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Bubbles&display=swap" rel="stylesheet">
