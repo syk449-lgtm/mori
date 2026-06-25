@@ -101,17 +101,19 @@
       flex-shrink: 0;
     }
 
-    /* ── 상단 네비 (히어로 위에 transparent) ── */
+    /* ── 상단 네비 (fixed, 스크롤 시 상단 고정) ── */
     .top-nav {
-      position: absolute;
-      top: 50px;
-      left: 0; right: 0;
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 393px;
       height: 56px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 14px 16px;
-      z-index: 100;
+      z-index: 200;
     }
     .nav-left {
       display: flex;
@@ -266,25 +268,25 @@
 </head>
 <body>
 
+<!-- 상단 네비 (fixed) -->
+<div class="top-nav">
+  <div class="nav-left">
+    <div class="nav-icon back" onclick="history.back()">
+      <img src="assets/icon_back.png" alt="뒤로">
+    </div>
+    <div class="nav-icon" onclick="location.href='home.html'">
+      <img src="assets/Icon_Arrow 2.svg" alt="홈">
+    </div>
+  </div>
+  <div class="nav-icon">
+    <img src="assets/Icon_Arrow 3.svg" alt="공유">
+  </div>
+</div>
+
 <!-- 히어로 영역 -->
 <div class="hero">
   <img class="hero-img" src="assets/store1_img1.png" alt="">
   <div class="hero-overlay"></div>
-
-  <!-- 상단 네비 (히어로 위에 absolute) -->
-  <div class="top-nav">
-    <div class="nav-left">
-      <div class="nav-icon back" onclick="history.back()">
-        <img src="assets/icon_back.png" alt="뒤로">
-      </div>
-      <div class="nav-icon" onclick="location.href='home.html'">
-        <img src="assets/Icon_Arrow 2.svg" alt="홈">
-      </div>
-    </div>
-    <div class="nav-icon">
-      <img src="assets/Icon_Arrow 3.svg" alt="공유">
-    </div>
-  </div>
 
   <!-- 스토어 이름 + 정보 -->
   <div class="hero-text">
