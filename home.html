@@ -458,8 +458,8 @@
 <!-- ep. 1 -->
 <div class="scroll-section">
   <div class="section-header">
-    <span class="ep-badge dark">ep. 1</span>
-    <div class="section-title">향기로 기억되는 하루</div>
+    <span class="ep-badge dark" id="ep1-badge">ep. 1</span>
+    <div class="section-title" id="ep1-title">향기로 기억되는 하루</div>
   </div>
   <div class="image-grid" id="ep1-grid"></div>
   <div class="more-btn-wrap">
@@ -470,8 +470,8 @@
 <!-- ep. 2 -->
 <div class="scroll-section">
   <div class="section-header">
-    <span class="ep-badge light">ep. 2</span>
-    <div class="section-title">너를 닮은 케이크 한 조각</div>
+    <span class="ep-badge light" id="ep2-badge">ep. 2</span>
+    <div class="section-title" id="ep2-title">너를 닮은 케이크 한 조각</div>
   </div>
   <div class="image-grid" id="ep2-grid"></div>
   <div class="more-btn-wrap">
@@ -482,8 +482,8 @@
 <!-- ep. 3 -->
 <div class="scroll-section">
   <div class="section-header">
-    <span class="ep-badge darker">ep. 3</span>
-    <div class="section-title">달콤한 기억을 선물하세요</div>
+    <span class="ep-badge darker" id="ep3-badge">ep. 3</span>
+    <div class="section-title" id="ep3-title">달콤한 기억을 선물하세요</div>
   </div>
   <div class="image-grid" id="ep3-grid"></div>
   <div class="more-btn-wrap">
@@ -494,8 +494,8 @@
 <!-- ep. 4 -->
 <div class="scroll-section">
   <div class="section-header">
-    <span class="ep-badge light">ep. 4</span>
-    <div class="section-title">네 손에 핀 작은 선물</div>
+    <span class="ep-badge light" id="ep4-badge">ep. 4</span>
+    <div class="section-title" id="ep4-title">네 손에 핀 작은 선물</div>
   </div>
   <div class="image-grid" id="ep4-grid"></div>
   <div class="more-btn-wrap">
@@ -520,59 +520,18 @@
 </div>
 
 <script>
+const SUPABASE_URL = 'https://arrnybkpgqeecwgdcbdi.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycm55YmtwZ3FlZWN3Z2RjYmRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzOTc3MTEsImV4cCI6MjA5Nzk3MzcxMX0.fI_S3ffw6FPYkGjiYuqDyXLrgixRTq7KdbAieSNvrLA';
+const SB_HEADERS = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
+
 (function() {
-  const slides = [
-    {
-      img: 'assets/banner_main.png',
-      title: '이러다 생일 지나겠다,<br>너 아직도 못 골랐어?',
-      subtitle: '여름 냄새 나는 케이크 모음'
-    },
-    {
-      img: 'assets/banner_left.png',
-      title: '향기로 기억되는 하루',
-      subtitle: '너만을 위한 플라워 케이크'
-    },
-    {
-      img: 'assets/banner_right.png',
-      title: '너를 닮은<br>케이크 한 조각',
-      subtitle: '달콤한 기억을 선물하세요'
-    },
-    {
-      img: 'assets/img1.png',
-      title: '네 손에 핀<br>작은 케이크',
-      subtitle: '진심을 담은 디저트 큐레이션'
-    }
-  ];
+  let slides = [], N = 0, current = 0, isAnimating = false;
+  let cards = [], navDots = [];
 
-  const N = slides.length;
-  let current = 0, isAnimating = false;
-
-  const slider     = document.getElementById('bannerSlider');
-  const bgLayers   = [document.getElementById('bgLayer0'), document.getElementById('bgLayer1')];
+  const slider      = document.getElementById('bannerSlider');
+  const bgLayers    = [document.getElementById('bgLayer0'), document.getElementById('bgLayer1')];
   const navDotsWrap = document.getElementById('navDots');
   let activeBgLayer = 0;
-
-  // 카드 DOM 생성
-  const cards = slides.map((s) => {
-    const el = document.createElement('div');
-    el.className = 'banner-card';
-    el.innerHTML = `
-      <img src="${s.img}" alt="" draggable="false">
-      <div class="card-gradient-text">
-        <div class="card-title">${s.title}</div>
-        <div class="card-subtitle">${s.subtitle}</div>
-      </div>`;
-    slider.appendChild(el);
-    return el;
-  });
-
-  // 상단 nav 닷 생성
-  const navDots = slides.map(() => {
-    const d = document.createElement('div');
-    d.className = 'nav-dot-circle';
-    navDotsWrap.appendChild(d);
-    return d;
-  });
 
   function getState(i) {
     const diff = ((i - current) % N + N) % N;
@@ -608,19 +567,13 @@
     cards.forEach(c => c.querySelector('.card-gradient-text').classList.remove('visible'));
     current = ((idx % N) + N) % N;
     applyStates();
-    crossfadeBg(slides[current].img);
+    crossfadeBg(slides[current].img_url);
     // 카드 전환 완료 후 텍스트 페이드인
     setTimeout(() => {
       showActiveText();
       isAnimating = false;
     }, 440);
   }
-
-  // 초기 렌더
-  bgLayers[0].style.backgroundImage = `url('${slides[0].img}')`;
-  bgLayers[0].style.opacity = '1';
-  applyStates();
-  showActiveText();
 
   // 터치 / 마우스 드래그
   const wrap = document.getElementById('bannerWrap');
@@ -654,12 +607,44 @@
   wrap.addEventListener('mouseleave', e => { if (isDragging) { isDragging = false; } });
 
   // 자동 슬라이드 4초
-  let timer = setInterval(() => goTo(current + 1), 4000);
+  let timer;
   wrap.addEventListener('mousedown',  () => clearInterval(timer));
   wrap.addEventListener('touchstart', () => clearInterval(timer), { passive: true });
   ['mouseup','mouseleave','touchend'].forEach(ev =>
     wrap.addEventListener(ev, () => { timer = setInterval(() => goTo(current + 1), 4000); })
   );
+
+  // Supabase에서 배너 로드
+  fetch(SUPABASE_URL + '/rest/v1/banners?select=*&order=order_num.asc', { headers: SB_HEADERS })
+    .then(r => r.json())
+    .then(data => {
+      slides = data;
+      N = slides.length;
+      if (!N) return;
+      cards = slides.map(s => {
+        const el = document.createElement('div');
+        el.className = 'banner-card';
+        el.innerHTML =
+          '<img src="' + s.img_url + '" alt="" draggable="false">' +
+          '<div class="card-gradient-text">' +
+            '<div class="card-title">' + s.title.replace(/\n/g, '<br>') + '</div>' +
+            '<div class="card-subtitle">' + s.subtitle + '</div>' +
+          '</div>';
+        slider.appendChild(el);
+        return el;
+      });
+      navDots = slides.map(() => {
+        const d = document.createElement('div');
+        d.className = 'nav-dot-circle';
+        navDotsWrap.appendChild(d);
+        return d;
+      });
+      bgLayers[0].style.backgroundImage = "url('" + slides[0].img_url + "')";
+      bgLayers[0].style.opacity = '1';
+      applyStates();
+      showActiveText();
+      timer = setInterval(() => goTo(current + 1), 4000);
+    });
 })();
 </script>
 
@@ -670,37 +655,53 @@
   function makeCard(store) {
     const card = document.createElement('div');
     card.className = 'store-card';
-    const host = new URL(store.url).hostname.replace('www.', '');
-    card.innerHTML =
-      '<div class="store-card-img">' +
-        (store.image ? '<img src="' + store.image + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">' : '') +
-      '</div>' +
-      '<div class="store-card-name">' + (store.title || '—') + '</div>' +
-      '<div class="store-card-meta"><span class="store-card-location">' + host + '</span></div>';
-    card.addEventListener('click', () => window.open(store.url, '_blank'));
+    if (store) {
+      const host = new URL(store.url).hostname.replace('www.', '');
+      card.innerHTML =
+        '<div class="store-card-img">' +
+          (store.image ? '<img src="' + store.image + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">' : '') +
+        '</div>' +
+        '<div class="store-card-name">' + (store.title || '—') + '</div>' +
+        '<div class="store-card-meta"><span class="store-card-location">' + host + '</span></div>';
+      card.addEventListener('click', () => window.open(store.url, '_blank'));
+    } else {
+      card.innerHTML =
+        '<div class="store-card-img store-card-skeleton"></div>' +
+        '<div class="store-card-name" style="background:#f0f0f0;color:transparent;border-radius:4px;width:70%;">placeholder</div>' +
+        '<div class="store-card-meta" style="background:#f0f0f0;color:transparent;border-radius:4px;width:40%;margin-top:4px;">placeholder</div>';
+      card.style.pointerEvents = 'none';
+    }
     return card;
   }
 
-  const SUPABASE_URL = 'https://arrnybkpgqeecwgdcbdi.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycm55YmtwZ3FlZWN3Z2RjYmRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzOTc3MTEsImV4cCI6MjA5Nzk3MzcxMX0.fI_S3ffw6FPYkGjiYuqDyXLrgixRTq7KdbAieSNvrLA';
+  // 에피소드 타이틀
+  fetch(SUPABASE_URL + '/rest/v1/episodes?select=*&order=ep.asc', { headers: SB_HEADERS })
+    .then(r => r.json())
+    .then(eps => {
+      eps.forEach(e => {
+        const el = document.getElementById('ep' + e.ep + '-title');
+        const badge = document.getElementById('ep' + e.ep + '-badge');
+        if (el) el.textContent = e.title;
+        if (badge && e.badge) {
+          badge.className = 'ep-badge ' + e.badge;
+        }
+      });
+    });
 
-  fetch(SUPABASE_URL + '/rest/v1/stores?select=*&order=ep.asc,created_at.asc', {
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY
-    }
-  })
+  // 스토어 카드
+  fetch(SUPABASE_URL + '/rest/v1/stores?select=*&order=ep.asc,created_at.asc', { headers: SB_HEADERS })
     .then(r => r.json())
     .then(stores => {
       [1, 2, 3, 4].forEach(ep => {
         const grid = document.getElementById('ep' + ep + '-grid');
         if (!grid) return;
         const items = stores.filter(s => s.ep === ep);
-        for (let i = 0; i < items.length; i += 2) {
+        const slots = [items[0]||null, items[1]||null, items[2]||null, items[3]||null];
+        for (let i = 0; i < 4; i += 2) {
           const row = document.createElement('div');
           row.className = 'image-row';
-          row.appendChild(makeCard(items[i]));
-          if (items[i + 1]) row.appendChild(makeCard(items[i + 1]));
+          row.appendChild(makeCard(slots[i]));
+          row.appendChild(makeCard(slots[i + 1]));
           grid.appendChild(row);
         }
       });

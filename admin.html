@@ -39,6 +39,8 @@
     .empty { color: #aaa; font-size: 14px; text-align: center; padding: 32px; }
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
     .toast.show { opacity: 1; }
+    .ep-row { display: flex; align-items: center; gap: 10px; }
+    .ep-label { font-size: 13px; font-weight: 600; color: #555; min-width: 40px; }
   </style>
 </head>
 <body>
@@ -78,6 +80,35 @@
     <button class="btn-primary" onclick="addItem()">추가하기</button>
   </div>
 
+  <!-- 에피소드 제목 -->
+  <div class="form-box">
+    <h2>에피소드 제목</h2>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div class="ep-row"><span class="ep-label">ep. 1</span><input type="text" id="epTitle1" placeholder="ep. 1 제목"></div>
+      <div class="ep-row"><span class="ep-label">ep. 2</span><input type="text" id="epTitle2" placeholder="ep. 2 제목"></div>
+      <div class="ep-row"><span class="ep-label">ep. 3</span><input type="text" id="epTitle3" placeholder="ep. 3 제목"></div>
+      <div class="ep-row"><span class="ep-label">ep. 4</span><input type="text" id="epTitle4" placeholder="ep. 4 제목"></div>
+    </div>
+    <button class="btn-primary" style="margin-top:12px;" onclick="saveEpisodes()">저장하기</button>
+  </div>
+
+  <!-- 배너 관리 -->
+  <div class="form-box">
+    <h2>배너 추가</h2>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <input type="text" id="bannerImg" placeholder="이미지 URL (예: assets/banner_main.png)">
+      <input type="text" id="bannerTitle" placeholder="배너 제목 (\n으로 줄바꿈)">
+      <input type="text" id="bannerSubtitle" placeholder="서브타이틀">
+      <input type="number" id="bannerOrder" placeholder="순서 (0부터)" value="0" style="width:120px;">
+    </div>
+    <button class="btn-primary" style="margin-top:12px;" onclick="addBanner()">배너 추가</button>
+  </div>
+
+  <div class="list-box" style="margin-bottom:32px;">
+    <h2>등록된 배너</h2>
+    <div id="bannerList"><div class="empty">로딩중...</div></div>
+  </div>
+
   <div class="list-box">
     <h2>등록된 상품</h2>
     <div id="itemList"><div class="empty">로딩중...</div></div>
@@ -89,6 +120,7 @@
 <script>
 const SUPABASE_URL = 'https://arrnybkpgqeecwgdcbdi.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycm55YmtwZ3FlZWN3Z2RjYmRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzOTc3MTEsImV4cCI6MjA5Nzk3MzcxMX0.fI_S3ffw6FPYkGjiYuqDyXLrgixRTq7KdbAieSNvrLA';
+const SB_HEADERS = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
 const OG_API = 'https://mori-silk.vercel.app/api/og';
 const ADMIN_PW = 'mori2025';
 
@@ -100,6 +132,8 @@ function checkPw() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminScreen').style.display = 'block';
     loadList();
+    loadEpisodes();
+    loadBanners();
   } else {
     alert('비밀번호가 틀렸어요.');
   }
@@ -161,12 +195,78 @@ async function addItem() {
   }
 }
 
+async function loadEpisodes() {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/episodes?select=*&order=ep.asc', { headers: SB_HEADERS });
+  const eps = await res.json();
+  eps.forEach(e => {
+    const input = document.getElementById('epTitle' + e.ep);
+    if (input) input.value = e.title || '';
+  });
+}
+
+async function saveEpisodes() {
+  const updates = [1, 2, 3, 4].map(ep => ({
+    ep,
+    title: document.getElementById('epTitle' + ep)?.value || ''
+  }));
+  for (const upd of updates) {
+    await fetch(SUPABASE_URL + '/rest/v1/episodes?ep=eq.' + upd.ep, {
+      method: 'PATCH',
+      headers: { ...SB_HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ title: upd.title })
+    });
+  }
+  showToast('저장됐어요!');
+}
+
+async function loadBanners() {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/banners?select=*&order=order_num.asc', { headers: SB_HEADERS });
+  const items = await res.json();
+  const list = document.getElementById('bannerList');
+  if (!items.length) { list.innerHTML = '<div class="empty">등록된 배너가 없어요.</div>'; return; }
+  list.innerHTML = items.map(b => `
+    <div class="item" id="banner-${b.id}">
+      <img src="${b.img_url}" alt="" onerror="this.style.background='#eee'" style="width:56px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0;">
+      <div class="item-info">
+        <div class="item-title">${b.title || '—'}</div>
+        <div class="item-meta">${b.subtitle || ''} · 순서 ${b.order_num}</div>
+      </div>
+      <button class="btn-delete" onclick="deleteBanner(${b.id})">삭제</button>
+    </div>
+  `).join('');
+}
+
+async function addBanner() {
+  const img_url = document.getElementById('bannerImg').value.trim();
+  const title = document.getElementById('bannerTitle').value.trim();
+  const subtitle = document.getElementById('bannerSubtitle').value.trim();
+  const order_num = parseInt(document.getElementById('bannerOrder').value) || 0;
+  if (!img_url) return alert('이미지 URL을 입력해주세요.');
+  const res = await fetch(SUPABASE_URL + '/rest/v1/banners', {
+    method: 'POST',
+    headers: { ...SB_HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ img_url, title, subtitle, order_num })
+  });
+  if (res.ok) {
+    showToast('배너 추가됐어요!');
+    ['bannerImg','bannerTitle','bannerSubtitle'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('bannerOrder').value = '0';
+    loadBanners();
+  } else {
+    alert('추가 실패: ' + await res.text());
+  }
+}
+
+async function deleteBanner(id) {
+  if (!confirm('배너를 삭제할까요?')) return;
+  await fetch(SUPABASE_URL + '/rest/v1/banners?id=eq.' + id, { method: 'DELETE', headers: SB_HEADERS });
+  document.getElementById('banner-' + id)?.remove();
+  showToast('삭제됐어요.');
+}
+
 async function loadList() {
   const res = await fetch(SUPABASE_URL + '/rest/v1/stores?select=*&order=created_at.desc', {
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY
-    }
+    headers: SB_HEADERS
   });
   const items = await res.json();
   const list = document.getElementById('itemList');
@@ -192,10 +292,7 @@ async function deleteItem(id) {
   if (!confirm('삭제할까요?')) return;
   await fetch(SUPABASE_URL + '/rest/v1/stores?id=eq.' + id, {
     method: 'DELETE',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY
-    }
+    headers: SB_HEADERS
   });
   document.getElementById('item-' + id)?.remove();
   showToast('삭제됐어요.');
