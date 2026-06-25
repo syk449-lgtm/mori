@@ -96,8 +96,12 @@
   <div class="form-box">
     <h2>배너 추가</h2>
     <div style="display:flex;flex-direction:column;gap:8px;">
-      <input type="text" id="bannerImg" placeholder="이미지 URL (예: assets/banner_main.png)" oninput="previewBannerImg(this.value)">
-      <img id="bannerImgPreview" src="" alt="" style="display:none;width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:4px;">
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="bannerPageUrl" placeholder="상품/페이지 URL 붙여넣기" style="flex:1;">
+        <button class="btn-preview" onclick="fetchBannerOg()">미리보기</button>
+      </div>
+      <img id="bannerImgPreview" src="" alt="" style="display:none;width:100%;max-height:160px;object-fit:cover;border-radius:8px;">
+      <input type="text" id="bannerImg" placeholder="이미지 URL (자동 입력 또는 직접 입력)" oninput="previewBannerImg(this.value)">
       <input type="text" id="bannerTitle" placeholder="배너 제목 (\n으로 줄바꿈)">
       <input type="text" id="bannerSubtitle" placeholder="서브타이틀">
       <input type="text" id="bannerLink" placeholder="클릭 시 이동할 URL (없으면 비워두기)">
@@ -195,6 +199,26 @@ async function addItem() {
   } else {
     alert('추가 실패: ' + await res.text());
   }
+}
+
+async function fetchBannerOg() {
+  const url = document.getElementById('bannerPageUrl').value.trim();
+  if (!url) return alert('URL을 입력해주세요.');
+  const preview = document.getElementById('bannerImgPreview');
+  preview.style.display = 'none';
+  try {
+    const res = await fetch(OG_API + '?url=' + encodeURIComponent(url));
+    const og = await res.json();
+    if (og.image) {
+      document.getElementById('bannerImg').value = og.image;
+      preview.src = og.image;
+      preview.style.display = 'block';
+    }
+    if (og.title && !document.getElementById('bannerTitle').value)
+      document.getElementById('bannerTitle').value = og.title;
+    if (!document.getElementById('bannerLink').value)
+      document.getElementById('bannerLink').value = og.url || url;
+  } catch(e) { alert('미리보기 실패'); }
 }
 
 function previewBannerImg(url) {
