@@ -19,7 +19,7 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    html { background: #d9d9d9; overflow-x: hidden; }
+    html { background: #d9d9d9; overflow-x: hidden; overscroll-behavior-y: none; }
 
     body {
       font-family: 'Pretendard Variable', 'Pretendard', -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
@@ -29,6 +29,7 @@
       color: #1a1a1a;
       overflow-x: hidden;
       min-height: 100vh;
+      overscroll-behavior-y: none;
     }
 
     /* ── Hero: nav + banner 하나의 섹션 ── */
@@ -40,6 +41,7 @@
       overflow: hidden;
       cursor: grab;
       user-select: none;
+      touch-action: pan-y;
     }
     .hero:active { cursor: grabbing; }
 
