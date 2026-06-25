@@ -95,16 +95,18 @@
   <!-- 배너 관리 -->
   <div class="form-box">
     <h2>배너 추가</h2>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="bannerPageUrl" placeholder="상품/페이지 URL 붙여넣기" style="flex:1;">
-        <button class="btn-preview" onclick="fetchBannerOg()">미리보기</button>
-      </div>
-      <img id="bannerImgPreview" src="" alt="" style="display:none;width:100%;max-height:160px;object-fit:cover;border-radius:8px;">
-      <input type="text" id="bannerImg" placeholder="이미지 URL (자동 입력 또는 직접 입력)" oninput="previewBannerImg(this.value)">
-      <input type="text" id="bannerTitle" placeholder="배너 제목 (\n으로 줄바꿈)">
+    <div class="row">
+      <input type="text" id="bannerPageUrl" placeholder="URL 붙여넣기" style="flex:1;">
+      <button class="btn-preview" onclick="fetchBannerOg()">미리보기</button>
+    </div>
+    <div class="preview-box clearfix" id="bannerPreviewBox">
+      <img id="bannerPreviewImg" src="" alt="">
+      <div class="preview-title" id="bannerPreviewTitle"></div>
+      <div class="preview-domain" id="bannerPreviewDomain"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+      <input type="text" id="bannerTitle" placeholder="배너 제목 (비우면 OG 제목 사용)">
       <input type="text" id="bannerSubtitle" placeholder="서브타이틀">
-      <input type="text" id="bannerLink" placeholder="클릭 시 이동할 URL (없으면 비워두기)">
       <input type="number" id="bannerOrder" placeholder="순서 (0부터)" value="0" style="width:120px;">
     </div>
     <button class="btn-primary" style="margin-top:12px;" onclick="addBanner()">배너 추가</button>
@@ -201,32 +203,26 @@ async function addItem() {
   }
 }
 
+let bannerOgCache = null;
+
 async function fetchBannerOg() {
   const url = document.getElementById('bannerPageUrl').value.trim();
-  if (!url) return alert('URL을 입력해주세요.');
-  const preview = document.getElementById('bannerImgPreview');
-  preview.style.display = 'none';
+  if (!url) return;
+  const box = document.getElementById('bannerPreviewBox');
+  box.style.display = 'block';
+  document.getElementById('bannerPreviewTitle').textContent = '로딩중...';
+  document.getElementById('bannerPreviewDomain').textContent = '';
+  document.getElementById('bannerPreviewImg').src = '';
   try {
     const res = await fetch(OG_API + '?url=' + encodeURIComponent(url));
     const og = await res.json();
-    if (og.image) {
-      document.getElementById('bannerImg').value = og.image;
-      preview.src = og.image;
-      preview.style.display = 'block';
-    }
-    if (og.title && !document.getElementById('bannerTitle').value)
-      document.getElementById('bannerTitle').value = og.title;
-    if (!document.getElementById('bannerLink').value)
-      document.getElementById('bannerLink').value = og.url || url;
-  } catch(e) { alert('미리보기 실패'); }
-}
-
-function previewBannerImg(url) {
-  const img = document.getElementById('bannerImgPreview');
-  if (!url) { img.style.display = 'none'; return; }
-  img.src = url;
-  img.style.display = 'block';
-  img.onerror = () => { img.style.display = 'none'; };
+    bannerOgCache = og;
+    document.getElementById('bannerPreviewImg').src = og.image || '';
+    document.getElementById('bannerPreviewTitle').textContent = og.title || '(제목 없음)';
+    document.getElementById('bannerPreviewDomain').textContent = new URL(url).hostname.replace('www.', '');
+  } catch(e) {
+    document.getElementById('bannerPreviewTitle').textContent = '미리보기 실패';
+  }
 }
 
 async function loadEpisodes() {
@@ -271,21 +267,31 @@ async function loadBanners() {
 }
 
 async function addBanner() {
-  const img_url = document.getElementById('bannerImg').value.trim();
-  const title = document.getElementById('bannerTitle').value.trim();
+  const pageUrl = document.getElementById('bannerPageUrl').value.trim();
+  if (!pageUrl && !bannerOgCache) return alert('URL을 입력하고 미리보기를 눌러주세요.');
+  if (!bannerOgCache) await fetchBannerOg();
+
+  const img_url = bannerOgCache?.image || '';
+  const title = document.getElementById('bannerTitle').value.trim() || bannerOgCache?.title || '';
   const subtitle = document.getElementById('bannerSubtitle').value.trim();
-  const link_url = document.getElementById('bannerLink').value.trim();
+  const link_url = bannerOgCache?.url || pageUrl;
   const order_num = parseInt(document.getElementById('bannerOrder').value) || 0;
-  if (!img_url) return alert('이미지 URL을 입력해주세요.');
+
+  if (!img_url) return alert('이미지를 가져오지 못했어요. URL을 확인해주세요.');
+
   const res = await fetch(SUPABASE_URL + '/rest/v1/banners', {
     method: 'POST',
     headers: { ...SB_HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-    body: JSON.stringify({ img_url, title, subtitle, link_url: link_url || null, order_num })
+    body: JSON.stringify({ img_url, title, subtitle, link_url, order_num })
   });
   if (res.ok) {
     showToast('배너 추가됐어요!');
-    ['bannerImg','bannerTitle','bannerSubtitle','bannerLink'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('bannerPageUrl').value = '';
+    document.getElementById('bannerTitle').value = '';
+    document.getElementById('bannerSubtitle').value = '';
     document.getElementById('bannerOrder').value = '0';
+    document.getElementById('bannerPreviewBox').style.display = 'none';
+    bannerOgCache = null;
     loadBanners();
   } else {
     alert('추가 실패: ' + await res.text());
