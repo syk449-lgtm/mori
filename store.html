@@ -36,7 +36,7 @@
       width: 393px;
       height: 340px;
       overflow: hidden;
-      margin-top: -56px;
+      margin-top: 0;
     }
     .hero-img {
       position: absolute;
@@ -101,11 +101,14 @@
       flex-shrink: 0;
     }
 
-    /* ── 상단 네비 (sticky) ── */
+    /* ── 상단 네비 (fixed) ── */
     .top-nav {
-      position: sticky;
+      position: fixed;
       top: 0;
-      width: 100%;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: 393px;
       height: 56px;
       display: flex;
       align-items: center;
@@ -136,7 +139,7 @@
       transform: rotate(180deg);
     }
     .top-nav {
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     }
     .top-nav.scrolled {
       background-color: rgba(255,255,255,1);
@@ -144,6 +147,7 @@
     }
     .top-nav.scrolled .nav-icon img {
       filter: none;
+      transition: filter 0.2s ease-in-out;
     }
 
     /* ── 화이트 카드 (히어로 위 overlap) ── */
@@ -381,20 +385,14 @@
   const nav = document.querySelector('.top-nav');
   const card = document.querySelector('.content-card');
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        nav.classList.add('scrolled');
-      } else {
-        nav.classList.remove('scrolled');
-      }
-    });
-  }, {
-    rootMargin: '-56px 0px 0px 0px',
-    threshold: 0
-  });
-
-  observer.observe(card);
+  window.addEventListener('scroll', () => {
+    const cardTop = card.getBoundingClientRect().top;
+    if (cardTop <= 56) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+  }, { passive: true });
 })();
 </script>
 </body>
