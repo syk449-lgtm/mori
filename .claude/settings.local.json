@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(claude mcp *)",
+      "PowerShell(Start-Process \"G:\\\\내 드라이브\\\\mori\\\\home.html\")"
+    ]
+  }
+}

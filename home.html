@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=393, initial-scale=1.0">
+  <title>mori</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Bubbles&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { background: #d9d9d9; }
+
+    body {
+      font-family: 'Pretendard Variable', 'Pretendard', -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      width: 393px;
+      margin: 0 auto;
+      background: #fff;
+      color: #1a1a1a;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ── Hero: nav + banner 하나의 섹션 ── */
+    .hero {
+      position: relative;
+      width: 394px;
+      height: 540px;   /* 56px nav + 484px banner */
+      background: #111;
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
+    }
+    .hero:active { cursor: grabbing; }
+
+    /* Nav: 배너 위에 transparent로 absolute */
+    .top-nav {
+      position: absolute;
+      top: 0; left: 0;
+      width: 394px;
+      height: 56px;
+      z-index: 200;
+    }
+    /* Logo: x=16, 수직 중앙 */
+    .nav-logo {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .nav-logo img {
+      height: 24px;
+      width: auto;
+      display: block;
+    }
+    /* 상단 닷 인디케이터: x=336, y=25 (Figma 정확 좌표) */
+    .nav-dots-icon {
+      position: absolute;
+      left: 336px;
+      top: 25px;
+      width: 42px;
+      height: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-dot-circle {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #fff;
+      opacity: 0.3;
+      flex-shrink: 0;
+      transition: opacity 0.3s ease;
+    }
+    .nav-dot-circle.active {
+      opacity: 1;
+    }
+
+    /* ── Main Banner (카드 영역, nav 아래) ── */
+    .main-banner {
+      position: absolute;
+      top: 56px; left: 0; right: 0;
+      height: 484px;   /* Figma Frame 97 height */
+      overflow: hidden;
+    }
+
+    /* 배경: 두 레이어 크로스페이드 (active ↔ inactive 교대) */
+    .banner-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    /* 두 레이어를 겹쳐서 opacity로 교차 */
+    .banner-bg-layer {
+      position: absolute;
+      /* 2배 줌: 컨테이너보다 크게 */
+      top: -30%; left: -30%;
+      width: 160%; height: 160%;
+      background-size: cover;
+      background-position: center;
+      /* blur + 어둡게 */
+      filter: blur(14px) brightness(0.5);
+      transition: opacity 0.6s ease;
+    }
+    /* 각 레이어 위에 어둡게 눌린 오버레이 */
+    .banner-bg-layer::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    /* 카드 컨테이너 — overflow hidden으로 peek 영역만 보임 */
+    .banner-slider {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    /* 카드 — 절대 위치, transition으로 슬라이딩 */
+    .banner-card {
+      position: absolute;
+      overflow: hidden;
+      will-change: left, top, width, height, opacity;
+      backface-visibility: hidden;
+      transition: left 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  top  0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  width  0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  height 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  border-radius 0.42s ease,
+                  opacity 0.42s ease,
+                  box-shadow 0.42s ease;
+    }
+    .banner-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+      -webkit-user-drag: none;
+    }
+
+    /* 활성 카드 상태 */
+    /* 카드 내부 그라디언트 + 텍스트 — 이미지 위에 직접 깔림 */
+    .card-gradient-text {
+      position: absolute;
+      /* 카드 위에서 227px 아래부터 시작, 바닥까지 */
+      top: 227.07px;
+      left: 0; right: 0; bottom: 0;
+      overflow: hidden;
+      border-radius: 0 0 18px 18px; /* 카드 하단 radius에 맞춤 */
+      background: linear-gradient(180.077deg,
+        rgba(0,0,0,0)   0.1243%,
+        rgba(0,0,0,0.5) 25.062%,
+        rgba(0,0,0,0.9) 99.876%
+      );
+      /* 패딩: Figma pb-48 pl-24 pr-32 pt-32 */
+      padding: 32px 32px 48px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 6px;
+        opacity: 0;
+      /* transition은 JS가 .visible 클래스로 제어 */
+      pointer-events: none;
+    }
+    .card-gradient-text.visible {
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+    .card-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+      letter-spacing: -0.5px;
+    }
+    .card-subtitle {
+      font-size: 14px;
+      font-weight: 500;
+      color: #ebebeb;
+    }
+
+    .banner-card.state-active {
+      width: 330px; height: 406px;
+      left: 31.5px; top: 39px;
+      border-radius: 18px;
+      opacity: 1;
+      z-index: 10;
+      box-shadow: 0 20px 56px rgba(0,0,0,0.55);
+    }
+    /* 이전 카드 상태 (왼쪽 peek) */
+    .banner-card.state-prev {
+      width: 234.86px; height: 289px;
+      left: -214.86px; top: 97.5px;
+      border-radius: 12px;
+      opacity: 0.45;
+      z-index: 5;
+      box-shadow: none;
+    }
+    /* 다음 카드 상태 (오른쪽 peek) */
+    .banner-card.state-next {
+      width: 234.86px; height: 289px;
+      left: 374px; top: 97.5px;
+      border-radius: 12px;
+      opacity: 0.45;
+      z-index: 5;
+      box-shadow: none;
+    }
+    /* 화면 밖 (왼쪽) */
+    .banner-card.state-far-left {
+      width: 234.86px; height: 289px;
+      left: -460px; top: 97.5px;
+      border-radius: 12px;
+      opacity: 0;
+      z-index: 1;
+    }
+    /* 화면 밖 (오른쪽) */
+    .banner-card.state-far-right {
+      width: 234.86px; height: 289px;
+      left: 620px; top: 97.5px;
+      border-radius: 12px;
+      opacity: 0;
+      z-index: 1;
+    }
+
+    /* 텍스트 오버레이 */
+    .banner-text-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 32px 24px 48px;
+      background: linear-gradient(180.077deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 25%, rgba(0,0,0,0.9) 100%);
+      pointer-events: none;
+    }
+    .banner-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    .banner-subtitle {
+      font-size: 14px;
+      font-weight: 500;
+      color: #ebebeb;
+    }
+
+    /* 닷 인디케이터 */
+    .banner-dots {
+      position: absolute;
+      bottom: 20px; right: 20px;
+      display: flex; gap: 5px;
+      z-index: 20;
+      pointer-events: none;
+    }
+    .banner-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+      transition: all 0.3s ease;
+    }
+    .banner-dot.active {
+      background: #fff;
+      width: 18px;
+      border-radius: 3px;
+    }
+
+    /* ── 스크롤 섹션 ── */
+    .scroll-section {
+      padding-bottom: 0;
+      border-bottom: 8px solid #f2f2f2;
+    }
+    .scroll-section:last-of-type { border-bottom: none; }
+
+    .section-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 38px 12px 0;
+    }
+
+    /* ep. 배지 스타일 변형 */
+    .ep-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1;
+    }
+    .ep-badge.dark   { background: #1e1e1e; color: #fff; border: none; }
+    .ep-badge.light  { background: #e4e4e4; color: #000; border: 1px solid #000; }
+    .ep-badge.darker { background: #303030; color: #fff; border: 1px solid #3a3a3a; }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 500;
+      color: #000;
+      text-align: center;
+      letter-spacing: -0.3px;
+    }
+
+    /* 2×2 이미지 그리드 */
+    .image-grid {
+      padding: 20px 12px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .image-row { display: flex; gap: 8px; }
+
+    .store-card { flex: 1; min-width: 0; }
+    .store-card-img {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #f0ede8;
+    }
+    .store-card-img img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .store-card-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #000;
+      margin-top: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .store-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 2px;
+    }
+    .store-card-location,
+    .store-card-category {
+      font-size: 12px;
+      color: #5a5a5a;
+      font-weight: 400;
+      white-space: nowrap;
+    }
+    .store-card-dot {
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: #5a5a5a;
+      flex-shrink: 0;
+    }
+
+    /* 더보기 버튼 */
+    .more-btn-wrap {
+      padding: 20px 12px 28px;
+      display: flex;
+      justify-content: center;
+    }
+    .more-btn {
+      width: 100%;
+      height: 43px;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      background: #fff;
+      font-size: 16px;
+      font-weight: 500;
+      color: #1a1a1a;
+      cursor: pointer;
+      letter-spacing: 0.1px;
+    }
+    .more-btn:active { background: #f5f5f5; }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 32px 16px 48px;
+      border-top: 1px solid #efefef;
+    }
+    .footer-logo {
+      font-family: 'Rubik Bubbles', cursive;
+      font-size: 28px;
+      font-weight: 400;
+      color: #1a1a1a;
+      text-transform: lowercase;
+      margin-bottom: 14px;
+    }
+    .footer-copy {
+      font-size: 12px;
+      color: #aaa;
+      line-height: 1.9;
+    }
+    .footer-divider { height: 1px; background: #efefef; margin: 14px 0; }
+    .footer-links { display: flex; align-items: center; gap: 8px; }
+    .footer-link { font-size: 12px; color: #999; cursor: pointer; }
+    .footer-dot { width: 2px; height: 2px; border-radius: 50%; background: #bbb; }
+  </style>
+</head>
+<body>
+
+<!-- ── Hero: 배경 전체 + 투명 nav + 배너 콘텐츠 ── -->
+<div class="hero" id="bannerWrap">
+
+  <!-- 배경: 전체 hero(646px) 채움, nav 뒤도 보임 -->
+  <div class="banner-bg">
+    <div class="banner-bg-layer" id="bgLayer0"></div>
+    <div class="banner-bg-layer" id="bgLayer1" style="opacity:0;"></div>
+  </div>
+
+  <!-- Nav: transparent, hero 위에 absolute -->
+  <div class="top-nav">
+    <div class="nav-logo"><img src="assets/mori-logo.svg" alt="mori"></div>
+    <div class="nav-dots-icon" id="navDots"></div>
+  </div>
+
+  <!-- 배너 콘텐츠: nav(56px) 아래부터 -->
+  <div class="main-banner">
+    <div class="banner-slider" id="bannerSlider"></div>
+  </div>
+
+</div>
+
+<!-- ── 스크롤 섹션 ── -->
+
+<!-- ep. 1 -->
+<div class="scroll-section">
+  <div class="section-header">
+    <span class="ep-badge dark">ep. 1</span>
+    <div class="section-title">향기로 기억되는 하루</div>
+  </div>
+  <div class="image-grid">
+    <div class="image-row">
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img1.png" alt="미소바케카케">
+        </div>
+        <div class="store-card-name">미소바케카케</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img2.png" alt="타셰">
+        </div>
+        <div class="store-card-name">타셰</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+    </div>
+    <div class="image-row">
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img3.png" alt="타셰">
+        </div>
+        <div class="store-card-name">타셰</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img4.png" alt="미소바케카케">
+        </div>
+        <div class="store-card-name">미소바케카케</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="more-btn-wrap">
+    <button class="more-btn" onclick="location.href='content.html'">더보기</button>
+  </div>
+</div>
+
+<!-- ep. 2 -->
+<div class="scroll-section">
+  <div class="section-header">
+    <span class="ep-badge light">ep. 2</span>
+    <div class="section-title">너를 닮은 케이크 한 조각</div>
+  </div>
+  <div class="image-grid">
+    <div class="image-row">
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img1.png" alt="우이필드">
+        </div>
+        <div class="store-card-name">우이필드</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img2.png" alt="분바렌도">
+        </div>
+        <div class="store-card-name">분바렌도</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+    </div>
+    <div class="image-row">
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/banner_right.png" alt="분바렌도">
+        </div>
+        <div class="store-card-name">분바렌도</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img5.png" alt="우이필드">
+        </div>
+        <div class="store-card-name">우이필드</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="more-btn-wrap">
+    <button class="more-btn" onclick="location.href='content.html'">더보기</button>
+  </div>
+</div>
+
+<!-- ep. 3 -->
+<div class="scroll-section">
+  <div class="section-header">
+    <span class="ep-badge darker">ep. 3</span>
+    <div class="section-title">너를 닮은 케이크 한 조각</div>
+  </div>
+  <div class="image-grid">
+    <div class="image-row">
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img1.png" alt="우이필드">
+        </div>
+        <div class="store-card-name">우이필드</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img2.png" alt="분바렌도">
+        </div>
+        <div class="store-card-name">분바렌도</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+    </div>
+    <div class="image-row">
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img3.png" alt="분바렌도">
+        </div>
+        <div class="store-card-name">분바렌도</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img4.png" alt="우이필드">
+        </div>
+        <div class="store-card-name">우이필드</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="more-btn-wrap">
+    <button class="more-btn" onclick="location.href='content.html'">더보기</button>
+  </div>
+</div>
+
+<!-- ep. 4 -->
+<div class="scroll-section">
+  <div class="section-header">
+    <span class="ep-badge light">ep. 4</span>
+    <div class="section-title">너를 닮은 케이크 한 조각</div>
+  </div>
+  <div class="image-grid">
+    <div class="image-row">
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img1.png" alt="우이필드">
+        </div>
+        <div class="store-card-name">우이필드</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img2.png" alt="분바렌도">
+        </div>
+        <div class="store-card-name">분바렌도</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+    </div>
+    <div class="image-row">
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/banner_right.png" alt="분바렌도">
+        </div>
+        <div class="store-card-name">분바렌도</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+      <div class="store-card">
+        <div class="store-card-img">
+          <img src="assets/img5.png" alt="우이필드">
+        </div>
+        <div class="store-card-name">우이필드</div>
+        <div class="store-card-meta">
+          <span class="store-card-location">서울 용산구</span>
+          <div class="store-card-dot"></div>
+          <span class="store-card-category">케이크/디저트</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="more-btn-wrap">
+    <button class="more-btn" onclick="location.href='content.html'">더보기</button>
+  </div>
+</div>
+
+<!-- ── Footer ── -->
+<div class="footer">
+  <div class="footer-logo">mori</div>
+  <div class="footer-copy">
+    © 2025 mori. All rights reserved.<br>
+    Contact: adcde123@gmail.com<br>
+    Follow us @mori_magazine
+  </div>
+  <div class="footer-divider"></div>
+  <div class="footer-links">
+    <span class="footer-link">이용약관</span>
+    <div class="footer-dot"></div>
+    <span class="footer-link">개인정보처리방침</span>
+  </div>
+</div>
+
+<script>
+(function() {
+  const slides = [
+    {
+      img: 'assets/banner_main.png',
+      title: '이러다 생일 지나겠다,<br>너 아직도 못 골랐어?',
+      subtitle: '여름 냄새 나는 케이크 모음'
+    },
+    {
+      img: 'assets/banner_left.png',
+      title: '향기로 기억되는 하루',
+      subtitle: '너만을 위한 플라워 케이크'
+    },
+    {
+      img: 'assets/banner_right.png',
+      title: '너를 닮은<br>케이크 한 조각',
+      subtitle: '달콤한 기억을 선물하세요'
+    },
+    {
+      img: 'assets/img1.png',
+      title: '네 손에 핀<br>작은 케이크',
+      subtitle: '진심을 담은 디저트 큐레이션'
+    }
+  ];
+
+  const N = slides.length;
+  let current = 0, isAnimating = false;
+
+  const slider     = document.getElementById('bannerSlider');
+  const bgLayers   = [document.getElementById('bgLayer0'), document.getElementById('bgLayer1')];
+  const navDotsWrap = document.getElementById('navDots');
+  let activeBgLayer = 0;
+
+  // 카드 DOM 생성
+  const cards = slides.map((s) => {
+    const el = document.createElement('div');
+    el.className = 'banner-card';
+    el.innerHTML = `
+      <img src="${s.img}" alt="" draggable="false">
+      <div class="card-gradient-text">
+        <div class="card-title">${s.title}</div>
+        <div class="card-subtitle">${s.subtitle}</div>
+      </div>`;
+    slider.appendChild(el);
+    return el;
+  });
+
+  // 상단 nav 닷 생성
+  const navDots = slides.map(() => {
+    const d = document.createElement('div');
+    d.className = 'nav-dot-circle';
+    navDotsWrap.appendChild(d);
+    return d;
+  });
+
+  function getState(i) {
+    const diff = ((i - current) % N + N) % N;
+    if (diff === 0) return 'state-active';
+    if (diff === 1) return 'state-next';
+    if (diff === N - 1) return 'state-prev';
+    if (diff === 2) return 'state-far-right';
+    return 'state-far-left';
+  }
+
+  function applyStates() {
+    cards.forEach((c, i) => { c.className = 'banner-card ' + getState(i); });
+    navDots.forEach((d, i) => { d.className = 'nav-dot-circle' + (i === current ? ' active' : ''); });
+  }
+
+  // 배경 크로스페이드: inactive 레이어에 새 이미지 세팅 후 opacity 교차
+  function crossfadeBg(imgUrl) {
+    const next = 1 - activeBgLayer;
+    bgLayers[next].style.backgroundImage = `url('${imgUrl}')`;
+    bgLayers[next].style.opacity = '1';
+    bgLayers[activeBgLayer].style.opacity = '0';
+    activeBgLayer = next;
+  }
+
+  function showActiveText() {
+    cards[current].querySelector('.card-gradient-text').classList.add('visible');
+  }
+
+  function goTo(idx) {
+    if (isAnimating) return;
+    isAnimating = true;
+    // 슬라이드 시작 전 모든 텍스트 즉시 숨김
+    cards.forEach(c => c.querySelector('.card-gradient-text').classList.remove('visible'));
+    current = ((idx % N) + N) % N;
+    applyStates();
+    crossfadeBg(slides[current].img);
+    // 카드 전환 완료 후 텍스트 페이드인
+    setTimeout(() => {
+      showActiveText();
+      isAnimating = false;
+    }, 440);
+  }
+
+  // 초기 렌더
+  bgLayers[0].style.backgroundImage = `url('${slides[0].img}')`;
+  bgLayers[0].style.opacity = '1';
+  applyStates();
+  showActiveText();
+
+  // 터치 / 마우스 드래그
+  const wrap = document.getElementById('bannerWrap');
+  let startX = 0, isDragging = false;
+
+  wrap.addEventListener('touchstart', e => { startX = e.touches[0].clientX; isDragging = true; }, { passive: true });
+  wrap.addEventListener('touchend',   e => {
+    if (!isDragging) return; isDragging = false;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 48) goTo(dx < 0 ? current + 1 : current - 1);
+  });
+
+  wrap.addEventListener('mousedown',  e => { startX = e.clientX; isDragging = true; });
+  wrap.addEventListener('mouseup',    e => {
+    if (!isDragging) return; isDragging = false;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 48) goTo(dx < 0 ? current + 1 : current - 1);
+  });
+  wrap.addEventListener('mouseleave', e => { if (isDragging) { isDragging = false; } });
+
+  // 자동 슬라이드 4초
+  let timer = setInterval(() => goTo(current + 1), 4000);
+  wrap.addEventListener('mousedown',  () => clearInterval(timer));
+  wrap.addEventListener('touchstart', () => clearInterval(timer), { passive: true });
+  ['mouseup','mouseleave','touchend'].forEach(ev =>
+    wrap.addEventListener(ev, () => { timer = setInterval(() => goTo(current + 1), 4000); })
+  );
+})();
+</script>
+</body>
+</html>

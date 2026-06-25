@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=393, initial-scale=1.0">
+  <title>mori — 미소바케카케</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Bubbles&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { background: #d9d9d9; }
+    body {
+      font-family: 'Pretendard Variable', 'Pretendard', -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      width: 393px;
+      margin: 0 auto;
+      background: #fff;
+      color: #1a1a1a;
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* ── 히어로 이미지 영역 ── */
+    .hero {
+      position: relative;
+      width: 393px;
+      height: 340px;
+      overflow: hidden;
+    }
+    .hero-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    /* ── 히어로 텍스트 (하단) ── */
+    .hero-text {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 234px;
+      display: flex;
+      align-items: flex-end;
+      padding: 16px 16px 48px;
+    }
+    .hero-text-group {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      width: 100%;
+    }
+    .store-names {
+      display: flex;
+      flex-direction: column;
+    }
+    .store-name-en {
+      font-size: 18px;
+      font-weight: 500;
+      color: #fff;
+      width: 337px;
+      line-height: 1;
+    }
+    .store-name-ko {
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      line-height: 1;
+    }
+    .store-meta {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .store-meta span {
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+      white-space: nowrap;
+    }
+    .meta-dot {
+      width: 3px;
+      height: 3px;
+      flex-shrink: 0;
+    }
+
+    /* ── 상단 네비 (히어로 위에 transparent) ── */
+    .top-nav {
+      position: absolute;
+      top: 50px;
+      left: 0; right: 0;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      z-index: 100;
+    }
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 192.5px;
+    }
+    .nav-icon {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .nav-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0) invert(1);
+    }
+    .nav-icon.back img {
+      transform: rotate(180deg);
+    }
+
+    /* ── 화이트 카드 (히어로 위 overlap) ── */
+    .content-card {
+      position: relative;
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      margin-top: -23px;
+      padding-bottom: 48px;
+      display: flex;
+      flex-direction: column;
+    }
+    .content-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    /* 사이트 버튼 */
+    .site-btn-wrap {
+      padding: 16px;
+    }
+    .site-btn {
+      width: 100%;
+      height: 44px;
+      background: #1e1e1e;
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .site-btn span {
+      font-size: 16px;
+      font-weight: 500;
+      color: #f5f5f5;
+      white-space: nowrap;
+    }
+
+    /* 섹션 공통 */
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0 16px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 500;
+      color: #000;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 337px;
+    }
+
+    /* 업체 소개 */
+    .description-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: #323232;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .more-link {
+      font-size: 12px;
+      font-weight: 400;
+      color: #898989;
+      text-decoration: underline;
+      text-transform: lowercase;
+      cursor: pointer;
+    }
+
+    /* 구분선 */
+    .divider {
+      width: 100%;
+      height: 0.5px;
+      background: #e1e1e1;
+      margin: 0;
+    }
+
+    /* 업체 정보 */
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .info-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .info-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: #323232;
+      white-space: nowrap;
+    }
+
+    /* 전체 사진 그리드 */
+    .photo-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .photo-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 16px;
+    }
+    .photo-item {
+      width: 176px;
+      height: 169px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 히어로 영역 -->
+<div class="hero">
+  <img class="hero-img" src="assets/store1_img1.png" alt="">
+  <div class="hero-overlay"></div>
+
+  <!-- 상단 네비 (히어로 위에 absolute) -->
+  <div class="top-nav">
+    <div class="nav-left">
+      <div class="nav-icon back" onclick="history.back()">
+        <img src="assets/icon_back.png" alt="뒤로">
+      </div>
+      <div class="nav-icon" onclick="location.href='home.html'">
+        <img src="assets/Icon_Arrow 2.svg" alt="홈">
+      </div>
+    </div>
+    <div class="nav-icon">
+      <img src="assets/Icon_Arrow 3.svg" alt="공유">
+    </div>
+  </div>
+
+  <!-- 스토어 이름 + 정보 -->
+  <div class="hero-text">
+    <div class="hero-text-group">
+      <div class="store-names">
+        <div class="store-name-en">misobakecake</div>
+        <div class="store-name-ko">미소바케카케</div>
+      </div>
+      <div class="store-meta">
+        <span>서울 마포구</span>
+        <img class="meta-dot" src="assets/dot_sep.svg" style="filter:brightness(0) invert(1);" alt="">
+        <span>케이크/디저트</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 화이트 콘텐츠 카드 -->
+<div class="content-card">
+
+  <!-- 사이트 버튼 -->
+  <div class="site-btn-wrap">
+    <div class="site-btn">
+      <span>@misobakecake</span>
+    </div>
+  </div>
+
+  <div class="content-inner">
+    <!-- 업체 소개 -->
+    <div class="section">
+      <div class="section-title">업체 소개</div>
+      <div>
+        <p class="description-text">업체 소개는 최대 2줄까지로 제한됩니다. 2줄 이상 작성 시 말줄임 처리와 더보기 버튼이 표시됩니다. 업체 소개는 최대 2줄까지로 제한됩니다. 2줄 이상 작성 시 말줄임 처리와 더보기 버튼이 표시됩니다.</p>
+        <p class="more-link">더보기</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 업체 정보 -->
+    <div class="section">
+      <div class="section-title">업체 정보</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div class="info-row">
+          <div class="info-icon">
+            <svg width="14" height="20" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 0C3.13 0 0 3.13 0 7C0 12.25 7 20 7 20C7 20 14 12.25 14 7C14 3.13 10.87 0 7 0ZM7 9.5C5.62 9.5 4.5 8.38 4.5 7C4.5 5.62 5.62 4.5 7 4.5C8.38 4.5 9.5 5.62 9.5 7C9.5 8.38 8.38 9.5 7 9.5Z" fill="#323232"/>
+            </svg>
+          </div>
+          <span class="info-text">서울특별시 마포구 창전동 5-81</span>
+        </div>
+        <div class="info-row">
+          <div class="info-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4.01 2C3.72 2 3.44 2.1 3.22 2.29L1.52 3.79C1.19 4.09 1 4.52 1 4.97C1 11.61 6.39 17 13.03 17C13.48 17 13.91 16.81 14.21 16.48L15.71 14.78C15.9 14.56 16 14.28 16 14C16 13.72 15.9 13.44 15.71 13.22L12.71 10.22C12.32 9.83 11.69 9.83 11.3 10.22L9.95 11.57C9.07 11.09 8.28 10.44 7.62 9.67L9.78 7.51C10.17 7.12 10.17 6.49 9.78 6.1L6.78 3.1C6.56 2.9 6.28 2.79 6 2.79C5.72 2.79 5.44 2.9 5.22 3.1L4.01 2Z" fill="#323232"/>
+            </svg>
+          </div>
+          <span class="info-text">010-1234-5678</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 전체 사진 -->
+    <div class="photo-section">
+      <div class="section-title" style="padding: 0 16px;">전체 사진</div>
+      <div class="photo-grid">
+        <div class="photo-item"><img src="assets/img3.png" alt=""></div>
+        <div class="photo-item"><img src="assets/store1_img1.png" alt=""></div>
+        <div class="photo-item"><img src="assets/store1_img2.png" alt=""></div>
+        <div class="photo-item"><img src="assets/banner_main.png" alt=""></div>
+        <div class="photo-item"><img src="assets/img1.png" alt=""></div>
+        <div class="photo-item"><img src="assets/img2.png" alt=""></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
