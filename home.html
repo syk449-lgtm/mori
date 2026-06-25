@@ -800,10 +800,22 @@
 
   // 터치 / 마우스 드래그
   const wrap = document.getElementById('bannerWrap');
-  let startX = 0, isDragging = false;
+  let startX = 0, startY = 0, isDragging = false;
 
-  wrap.addEventListener('touchstart', e => { startX = e.touches[0].clientX; isDragging = true; }, { passive: true });
-  wrap.addEventListener('touchend',   e => {
+  wrap.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    isDragging = true;
+  }, { passive: true });
+
+  wrap.addEventListener('touchmove', e => {
+    if (!isDragging) return;
+    const dx = Math.abs(e.touches[0].clientX - startX);
+    const dy = Math.abs(e.touches[0].clientY - startY);
+    if (dx > dy) e.preventDefault();
+  }, { passive: false });
+
+  wrap.addEventListener('touchend', e => {
     if (!isDragging) return; isDragging = false;
     const dx = e.changedTouches[0].clientX - startX;
     if (Math.abs(dx) > 48) goTo(dx < 0 ? current + 1 : current - 1);
