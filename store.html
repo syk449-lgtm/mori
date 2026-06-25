@@ -25,7 +25,6 @@
       margin: 0 auto;
       background: #fff;
       color: #1a1a1a;
-      overflow-x: hidden;
       min-height: 100vh;
       position: relative;
       overscroll-behavior-y: none;
@@ -37,6 +36,7 @@
       width: 393px;
       height: 340px;
       overflow: hidden;
+      margin-top: -56px;
     }
     .hero-img {
       position: absolute;
@@ -101,13 +101,11 @@
       flex-shrink: 0;
     }
 
-    /* ── 상단 네비 (fixed, 스크롤 시 상단 고정) ── */
+    /* ── 상단 네비 (sticky) ── */
     .top-nav {
-      position: fixed;
+      position: sticky;
       top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 393px;
+      width: 100%;
       height: 56px;
       display: flex;
       align-items: center;
