@@ -132,9 +132,20 @@
       height: 100%;
       object-fit: cover;
       filter: brightness(0) invert(1);
+      transition: filter 0.3s ease;
     }
     .nav-icon.back img {
       transform: rotate(180deg);
+    }
+    .top-nav {
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .top-nav.scrolled {
+      background-color: rgba(255,255,255,1);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+    }
+    .top-nav.scrolled .nav-icon img {
+      filter: none;
     }
 
     /* ── 화이트 카드 (히어로 위 overlap) ── */
@@ -367,5 +378,20 @@
 
 </div>
 
+<script>
+(function() {
+  const nav = document.querySelector('.top-nav');
+  const hero = document.querySelector('.hero');
+
+  window.addEventListener('scroll', () => {
+    const threshold = hero.offsetHeight - 80;
+    if (window.scrollY > threshold) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+  }, { passive: true });
+})();
+</script>
 </body>
 </html>
