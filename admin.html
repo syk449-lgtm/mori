@@ -60,41 +60,7 @@
 <div class="container" id="adminScreen" style="display:none;">
   <h1>mori admin</h1>
 
-  <div class="form-box">
-    <h2>상품 추가</h2>
-    <div class="row">
-      <input type="text" id="urlInput" placeholder="상품 URL 붙여넣기" style="flex:3;">
-      <select id="epSelect" style="flex:1; min-width:90px;">
-        <option value="1">ep. 1</option>
-        <option value="2">ep. 2</option>
-        <option value="3">ep. 3</option>
-        <option value="4">ep. 4</option>
-      </select>
-      <button class="btn-preview" onclick="previewUrl()">미리보기</button>
-    </div>
-
-    <div class="preview-box clearfix" id="previewBox">
-      <img id="previewImg" src="" alt="">
-      <div class="preview-title" id="previewTitle"></div>
-      <div class="preview-domain" id="previewDomain"></div>
-    </div>
-
-    <button class="btn-primary" id="addItemBtn" onclick="addItem()">추가하기</button>
-  </div>
-
-  <!-- 에피소드 제목 -->
-  <div class="form-box">
-    <h2>에피소드 제목</h2>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <div class="ep-row"><span class="ep-label">ep. 1</span><input type="text" id="epTitle1" placeholder="ep. 1 제목"></div>
-      <div class="ep-row"><span class="ep-label">ep. 2</span><input type="text" id="epTitle2" placeholder="ep. 2 제목"></div>
-      <div class="ep-row"><span class="ep-label">ep. 3</span><input type="text" id="epTitle3" placeholder="ep. 3 제목"></div>
-      <div class="ep-row"><span class="ep-label">ep. 4</span><input type="text" id="epTitle4" placeholder="ep. 4 제목"></div>
-    </div>
-    <button class="btn-primary" style="margin-top:12px;" onclick="saveEpisodes()">저장하기</button>
-  </div>
-
-  <!-- 배너 관리 -->
+  <!-- 배너 -->
   <div class="form-box">
     <h2>배너 추가</h2>
     <input type="text" id="bannerPageUrl" placeholder="URL 붙여넣기" oninput="autoBannerPreview(this.value)">
@@ -109,6 +75,39 @@
   <div class="list-box" style="margin-bottom:32px;">
     <h2>등록된 배너</h2>
     <div id="bannerList"><div class="empty">로딩중...</div></div>
+  </div>
+
+  <!-- 에피소드 제목 -->
+  <div class="form-box">
+    <h2>에피소드 제목</h2>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div class="ep-row"><span class="ep-label">ep. 1</span><input type="text" id="epTitle1" placeholder="ep. 1 제목"></div>
+      <div class="ep-row"><span class="ep-label">ep. 2</span><input type="text" id="epTitle2" placeholder="ep. 2 제목"></div>
+      <div class="ep-row"><span class="ep-label">ep. 3</span><input type="text" id="epTitle3" placeholder="ep. 3 제목"></div>
+      <div class="ep-row"><span class="ep-label">ep. 4</span><input type="text" id="epTitle4" placeholder="ep. 4 제목"></div>
+    </div>
+    <button class="btn-primary" style="margin-top:12px;" onclick="saveEpisodes()">저장하기</button>
+  </div>
+
+  <!-- 상품 -->
+  <div class="form-box">
+    <h2>상품 추가</h2>
+    <div class="row">
+      <input type="text" id="urlInput" placeholder="상품 URL 붙여넣기" style="flex:3;">
+      <select id="epSelect" style="flex:1; min-width:90px;">
+        <option value="1">ep. 1</option>
+        <option value="2">ep. 2</option>
+        <option value="3">ep. 3</option>
+        <option value="4">ep. 4</option>
+      </select>
+      <button class="btn-preview" onclick="previewUrl()">미리보기</button>
+    </div>
+    <div class="preview-box clearfix" id="previewBox">
+      <img id="previewImg" src="" alt="">
+      <div class="preview-title" id="previewTitle"></div>
+      <div class="preview-domain" id="previewDomain"></div>
+    </div>
+    <button class="btn-primary" id="addItemBtn" onclick="addItem()">추가하기</button>
   </div>
 
   <div class="list-box">
