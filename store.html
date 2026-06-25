@@ -379,16 +379,22 @@
 <script>
 (function() {
   const nav = document.querySelector('.top-nav');
-  const hero = document.querySelector('.hero');
+  const card = document.querySelector('.content-card');
 
-  window.addEventListener('scroll', () => {
-    const threshold = hero.offsetHeight - 80;
-    if (window.scrollY > threshold) {
-      nav.classList.add('scrolled');
-    } else {
-      nav.classList.remove('scrolled');
-    }
-  }, { passive: true });
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+  }, {
+    rootMargin: '-56px 0px 0px 0px',
+    threshold: 0
+  });
+
+  observer.observe(card);
 })();
 </script>
 </body>
