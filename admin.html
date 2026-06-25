@@ -95,19 +95,11 @@
   <!-- 배너 관리 -->
   <div class="form-box">
     <h2>배너 추가</h2>
-    <div class="row">
-      <input type="text" id="bannerPageUrl" placeholder="URL 붙여넣기" style="flex:1;">
-      <button class="btn-preview" onclick="fetchBannerOg()">미리보기</button>
-    </div>
-    <div class="preview-box clearfix" id="bannerPreviewBox">
+    <input type="text" id="bannerPageUrl" placeholder="URL 붙여넣기" oninput="autoBannerPreview(this.value)">
+    <div class="preview-box clearfix" id="bannerPreviewBox" style="display:none;margin-top:12px;">
       <img id="bannerPreviewImg" src="" alt="">
       <div class="preview-title" id="bannerPreviewTitle"></div>
       <div class="preview-domain" id="bannerPreviewDomain"></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
-      <input type="text" id="bannerTitle" placeholder="배너 제목 (비우면 OG 제목 사용)">
-      <input type="text" id="bannerSubtitle" placeholder="서브타이틀">
-      <input type="number" id="bannerOrder" placeholder="순서 (0부터)" value="0" style="width:120px;">
     </div>
     <button class="btn-primary" style="margin-top:12px;" onclick="addBanner()">배너 추가</button>
   </div>
@@ -204,10 +196,15 @@ async function addItem() {
 }
 
 let bannerOgCache = null;
+let bannerPreviewTimer = null;
 
-async function fetchBannerOg() {
-  const url = document.getElementById('bannerPageUrl').value.trim();
-  if (!url) return;
+function autoBannerPreview(url) {
+  clearTimeout(bannerPreviewTimer);
+  if (!url.startsWith('http')) return;
+  bannerPreviewTimer = setTimeout(() => fetchBannerOg(url), 800);
+}
+
+async function fetchBannerOg(url) {
   const box = document.getElementById('bannerPreviewBox');
   box.style.display = 'block';
   document.getElementById('bannerPreviewTitle').textContent = '로딩중...';
@@ -268,28 +265,23 @@ async function loadBanners() {
 
 async function addBanner() {
   const pageUrl = document.getElementById('bannerPageUrl').value.trim();
-  if (!pageUrl && !bannerOgCache) return alert('URL을 입력하고 미리보기를 눌러주세요.');
-  if (!bannerOgCache) await fetchBannerOg();
+  if (!pageUrl) return alert('URL을 입력해주세요.');
+  if (!bannerOgCache) await fetchBannerOg(pageUrl);
 
   const img_url = bannerOgCache?.image || '';
-  const title = document.getElementById('bannerTitle').value.trim() || bannerOgCache?.title || '';
-  const subtitle = document.getElementById('bannerSubtitle').value.trim();
+  const title = bannerOgCache?.title || '';
   const link_url = bannerOgCache?.url || pageUrl;
-  const order_num = parseInt(document.getElementById('bannerOrder').value) || 0;
 
   if (!img_url) return alert('이미지를 가져오지 못했어요. URL을 확인해주세요.');
 
   const res = await fetch(SUPABASE_URL + '/rest/v1/banners', {
     method: 'POST',
     headers: { ...SB_HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-    body: JSON.stringify({ img_url, title, subtitle, link_url, order_num })
+    body: JSON.stringify({ img_url, title, subtitle: '', link_url, order_num: 0 })
   });
   if (res.ok) {
     showToast('배너 추가됐어요!');
     document.getElementById('bannerPageUrl').value = '';
-    document.getElementById('bannerTitle').value = '';
-    document.getElementById('bannerSubtitle').value = '';
-    document.getElementById('bannerOrder').value = '0';
     document.getElementById('bannerPreviewBox').style.display = 'none';
     bannerOgCache = null;
     loadBanners();
